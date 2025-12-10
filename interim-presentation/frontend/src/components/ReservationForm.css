@@ -1,3 +1,15 @@
+.header-content h1 {
+    color: #2c3e50;
+}
+
+.header-content p {
+    color: #2c3e50 !important;
+}
+
+.subtitle {
+    color: black;
+}
+
 .reservation-form-container {
   max-width: 900px;
   margin: 0 auto;

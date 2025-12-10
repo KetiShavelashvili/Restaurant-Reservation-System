@@ -1,4 +1,5 @@
 import React from 'react';
+import ReservationForm from '../components/ReservationForm.jsx';
 import './ReservationPage.css';
 
 const ReservationPage = () => {
