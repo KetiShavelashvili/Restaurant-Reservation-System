@@ -9,7 +9,6 @@ exports.getAllTables = (req, res) => {
 // GET available tables
 exports.getAvailableTables = (req, res) => {
   const availableTables = tables.filter(table => table.isAvailable);
-  console.log('Available tables:', availableTables);
   res.json(availableTables);
 };
 
