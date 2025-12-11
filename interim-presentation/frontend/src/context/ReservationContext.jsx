@@ -41,21 +41,6 @@ export const ReservationProvider = ({ children }) => {
     }
   };
 
-  const fetchAvailableTables = async ({ date, time, partySize }) => {
-    try {
-      const formattedDate = date instanceof Date ? date.toISOString().split('T')[0] : date;
-      const response = await tableAPI.getAvailableTables({
-        params: { date: formattedDate, time, partySize }
-      });
-      setAvailableTables(response.data);
-      console.log('Fetched available tables:', response.data);
-    } catch (err) {
-      console.error('Failed to fetch available tables', err);
-      setAvailableTables([]);
-    }
-  };
-
-
   const loadReservations = async () => {
     try {
       const response = await reservationAPI.getAllReservations();
@@ -132,7 +117,6 @@ export const ReservationProvider = ({ children }) => {
     loadReservations,
     loadTables,
     loadAllData,
-    fetchAvailableTables,
     clearError: () => setError(null),
   };
 
