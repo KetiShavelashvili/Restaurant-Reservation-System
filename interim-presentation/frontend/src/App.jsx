@@ -8,6 +8,7 @@ import ReservationPage from './pages/ReservationPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
 import ReservationsList from './pages/ReservationsList.jsx'
 import Login from './pages/Login.jsx'
+import CustomerDashboard from './pages/CustomerDashboard.jsx'
 import './App.css'
 
 function App() {
@@ -21,6 +22,15 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<Login />} />
+                
+                <Route
+                  path="/my-reservations"
+                  element={
+                    <ProtectedRoute allowedRoles={['customer']}>
+                      <CustomerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
                 
                 <Route
                   path="/reserve"
@@ -44,6 +54,15 @@ function App() {
                   path="/admin"
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/staff"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'staff']}>
                       <AdminPage />
                     </ProtectedRoute>
                   }

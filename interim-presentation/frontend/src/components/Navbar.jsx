@@ -29,9 +29,18 @@ const Navbar = () => {
               <Link to="/reserve" className="nav-link">
                 <FaCalendarPlus className="nav-icon" /> New Reservation
               </Link>
-              <Link to="/reservations" className="nav-link">
-                <FaList className="nav-icon" /> All Reservations
-              </Link>
+              
+              {!isAdmin && !isStaff && (
+                <Link to="/my-reservations" className="nav-link">
+                  <FaList className="nav-icon" /> My Reservations
+                </Link>
+              )}
+              
+              {(isAdmin || isStaff) && (
+                <Link to="/reservations" className="nav-link">
+                  <FaList className="nav-icon" /> All Reservations
+                </Link>
+              )}
             </>
           )}
           
@@ -41,7 +50,7 @@ const Navbar = () => {
             </Link>
           )}
           
-          {isStaff && !isAdmin && (
+          {isStaff && (
             <Link to="/staff" className="nav-link">
               <FaUserCog className="nav-icon" /> Staff Panel
             </Link>
