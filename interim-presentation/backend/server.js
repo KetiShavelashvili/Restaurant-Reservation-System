@@ -11,8 +11,10 @@ app.use(express.json());
 // Import routes
 const reservationRoutes = require('./src/routes/reservationRoutes');
 const tableRoutes = require('./src/routes/tableRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 
 // Use routes
+app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/tables', tableRoutes);
 
