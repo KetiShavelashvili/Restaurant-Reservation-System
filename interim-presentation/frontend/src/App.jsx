@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { ReservationProvider } from './context/ReservationContext'
-import Navbar from './components/Navbar'
-import HomePage from './pages/HomePage'
-import ReservationPage from './pages/ReservationPage'
-import AdminPage from './pages/AdminPage'
-import ReservationsList from './pages/ReservationsList'
+import { ReservationProvider } from './context/ReservationContext.jsx'
+import Navbar from './components/Navbar.jsx'
+import HomePage from './pages/HomePage.jsx'
+import ReservationPage from './pages/ReservationPage.jsx'
+import AdminPage from './pages/AdminPage.jsx'
+import ReservationsList from './pages/ReservationsList.jsx'
 import './App.css'
 
 function App() {
