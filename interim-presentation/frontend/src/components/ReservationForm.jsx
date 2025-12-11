@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import { useReservation } from '../context/ReservationContext';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -6,6 +6,9 @@ import './ReservationForm.css';
 
 const ReservationForm = () => {
   const { createReservation, availableTables, loading } = useReservation();
+  const { fetchAvailableTables } = useReservation();
+
+
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -15,6 +18,15 @@ const ReservationForm = () => {
     partySize: 2,
     notes: '',
   });
+
+  useEffect(() => {
+    fetchAvailableTables({
+      date: formData.date,
+      time: formData.time,
+      partySize: formData.partySize,
+    });
+  }, [formData.date, formData.time, formData.partySize]);
+
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
