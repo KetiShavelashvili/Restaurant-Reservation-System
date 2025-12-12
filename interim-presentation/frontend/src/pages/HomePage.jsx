@@ -9,7 +9,7 @@ const HomePage = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Welcome to Gourmet Reserve</h1>
+          <h1 className="hero-title">Welcome to Table Reserve</h1>
           <p className="hero-subtitle">
             Experience fine dining with our easy-to-use reservation system. 
             Book your perfect table in just a few clicks.

@@ -17,7 +17,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <h1>🍽️ Gourmet Reserve</h1>
+          <h1>🍽️ Table Reserve</h1>
         </Link>
         <div className="navbar-menu">
           <Link to="/" className="nav-link">
