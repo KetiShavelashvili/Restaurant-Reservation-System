@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Login.css';
 
 const API_URL = 'http://localhost:5000/api/auth';
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+  const isAdminRegistering = location.state?.adminRegistering || false;
+  
+  const [isLogin, setIsLogin] = useState(!isAdminRegistering);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -15,7 +18,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -43,6 +46,13 @@ const Login = () => {
         throw new Error(data.message || 'Authentication failed');
       }
 
+      // If admin is registering a user, don't login, just go back to admin page
+      if (isAdminRegistering) {
+        alert('✅ User registered successfully!');
+        navigate('/admin');
+        return;
+      }
+
       // Store token and user data
       login({ ...data.user, token: data.token });
 
@@ -68,10 +78,34 @@ const Login = () => {
     });
   };
 
+  const handleToggle = () => {
+    if (isAdminRegistering) {
+      // If admin is registering, go back to admin page
+      navigate('/admin');
+    } else {
+      setIsLogin(!isLogin);
+    }
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
+        <h2>
+          {isAdminRegistering ? 'Register New User' : (isLogin ? 'Login' : 'Sign Up')}
+        </h2>
+        
+        {isAdminRegistering && (
+          <div className="admin-notice" style={{
+            background: '#e3f2fd',
+            padding: '10px',
+            borderRadius: '5px',
+            marginBottom: '15px',
+            textAlign: 'center',
+            color: '#1976d2'
+          }}>
+            <p>👨‍💼 Admin: Registering a new user</p>
+          </div>
+        )}
         
         {error && <div className="error-message">{error}</div>}
         
@@ -114,7 +148,7 @@ const Login = () => {
             />
           </div>
           
-          {!isLogin && (
+          {!isLogin && isAdminRegistering && (
             <div className="form-group">
               <label>Role</label>
               <select name="role" value={formData.role} onChange={handleChange}>
@@ -126,15 +160,25 @@ const Login = () => {
           )}
           
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}
+            {loading ? 'Please wait...' : (isLogin ? 'Login' : (isAdminRegistering ? 'Register User' : 'Sign Up'))}
           </button>
         </form>
         
         <p className="toggle-text">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span onClick={() => setIsLogin(!isLogin)} className="toggle-link">
-            {isLogin ? 'Sign Up' : 'Login'}
-          </span>
+          {isAdminRegistering ? (
+            <>
+              <span onClick={handleToggle} className="toggle-link">
+                Back to Admin Dashboard
+              </span>
+            </>
+          ) : (
+            <>
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <span onClick={handleToggle} className="toggle-link">
+                {isLogin ? 'Sign Up' : 'Login'}
+              </span>
+            </>
+          )}
         </p>
       </div>
     </div>

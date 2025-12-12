@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { 
-  FaPlus, FaChartBar, FaTable, FaUsers, 
-  FaCalendarAlt, FaCog, FaTrash, FaEdit,
-  FaCheck, FaTimes, FaFilter, FaSave
+  FaChartBar, FaUsers, FaCalendarAlt, 
+  FaTrash, FaEdit, FaCheck, FaTimes, 
+  FaFilter, FaSave, FaClock
 } from 'react-icons/fa';
-import './AdminPage.css';
+import './StaffPage.css';
 
 const API_URL = 'http://localhost:5000/api';
 
-const AdminPage = () => {
+const StaffPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [tables, setTables] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const [showTableForm, setShowTableForm] = useState(false);
-  const [newTable, setNewTable] = useState({
-    tableNumber: '',
-    capacity: 4,
-    location: 'Main Hall',
-    features: []
-  });
-  const [featureInput, setFeatureInput] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editingReservation, setEditingReservation] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -39,66 +29,55 @@ const AdminPage = () => {
   });
 
   useEffect(() => {
-    fetchData();
+    fetchReservations();
   }, []);
-
-  const fetchData = async () => {
-    await Promise.all([fetchTables(), fetchReservations()]);
-    setLoading(false);
-  };
-
-  const fetchTables = async () => {
-    try {
-      const response = await fetch(`${API_URL}/tables`);
-      const data = await response.json();
-      setTables(data);
-    } catch (error) {
-      console.error('Error fetching tables:', error);
-    }
-  };
 
   const fetchReservations = async () => {
     try {
+      setError(null);
+      
+      // Check if user and token exist
+      if (!user || !user.token) {
+        setError('Authentication required. Please log in.');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_URL}/reservations`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
       });
+
+      if (response.status === 401) {
+        setError('Unauthorized. Please log in again.');
+        setReservations([]);
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setReservations(data);
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setReservations(data);
+      } else if (data.reservations && Array.isArray(data.reservations)) {
+        setReservations(data.reservations);
+      } else {
+        setReservations([]);
+        console.warn('Unexpected data format:', data);
+      }
+      
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching reservations:', error);
-    }
-  };
-
-  const handleCreateTable = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${API_URL}/tables`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify(newTable)
-      });
-
-      if (response.ok) {
-        await fetchTables();
-        setNewTable({
-          tableNumber: '',
-          capacity: 4,
-          location: 'Main Hall',
-          features: []
-        });
-        setShowTableForm(false);
-        alert('✅ Table created successfully!');
-      } else {
-        alert('❌ Failed to create table');
-      }
-    } catch (err) {
-      console.error('Error creating table:', err);
-      alert('❌ Failed to create table');
+      setError(`Failed to load reservations: ${error.message}`);
+      setReservations([]);
+      setLoading(false);
     }
   };
 
@@ -193,7 +172,6 @@ const AdminPage = () => {
 
       if (response.ok) {
         await fetchReservations();
-        await fetchTables();
         alert('✅ Reservation deleted successfully!');
       } else {
         alert('❌ Failed to delete reservation');
@@ -204,34 +182,28 @@ const AdminPage = () => {
     }
   };
 
-  const addFeature = () => {
-    if (featureInput.trim()) {
-      setNewTable({
-        ...newTable,
-        features: [...newTable.features, featureInput.trim()]
-      });
-      setFeatureInput('');
-    }
-  };
+  // Safely filter reservations
+  const filteredReservations = Array.isArray(reservations)
+    ? (filterStatus === 'all' 
+        ? reservations 
+        : reservations.filter(r => r.status === filterStatus))
+    : [];
 
-  const removeFeature = (index) => {
-    setNewTable({
-      ...newTable,
-      features: newTable.features.filter((_, i) => i !== index)
-    });
-  };
-
-  const filteredReservations = filterStatus === 'all' 
-    ? reservations 
-    : reservations.filter(r => r.status === filterStatus);
-
+  // Safely calculate stats
   const stats = {
-    totalTables: tables.length,
-    availableTables: tables.filter(t => t.isAvailable).length,
-    totalReservations: reservations.length,
-    todayReservations: reservations.filter(r => r.date === new Date().toISOString().split('T')[0]).length,
-    pendingReservations: reservations.filter(r => r.status === 'pending').length,
-    confirmedReservations: reservations.filter(r => r.status === 'confirmed').length,
+    totalReservations: Array.isArray(reservations) ? reservations.length : 0,
+    todayReservations: Array.isArray(reservations) 
+      ? reservations.filter(r => r.date === new Date().toISOString().split('T')[0]).length 
+      : 0,
+    pendingReservations: Array.isArray(reservations) 
+      ? reservations.filter(r => r.status === 'pending').length 
+      : 0,
+    confirmedReservations: Array.isArray(reservations) 
+      ? reservations.filter(r => r.status === 'confirmed').length 
+      : 0,
+    completedReservations: Array.isArray(reservations) 
+      ? reservations.filter(r => r.status === 'completed').length 
+      : 0,
   };
 
   const getStatusColor = (status) => {
@@ -246,21 +218,50 @@ const AdminPage = () => {
 
   if (loading) {
     return (
-      <div className="admin-page">
-        <div className="loading-container">Loading dashboard...</div>
+      <div className="staff-page">
+        <div className="loading-container">Loading staff panel...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="staff-page">
+        <div className="error-container" style={{
+          padding: '40px',
+          textAlign: 'center',
+          color: '#e74c3c'
+        }}>
+          <h2>⚠️ Error</h2>
+          <p>{error}</p>
+          <button 
+            onClick={fetchReservations}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-page">
-      <div className="admin-header">
-        <h1>Admin Dashboard</h1>
-        <p>Manage restaurant tables and reservations</p>
+    <div className="staff-page">
+      <div className="staff-header">
+        <h1>Staff Panel</h1>
+        <p>Welcome, {user?.name || 'User'} - Manage reservations</p>
       </div>
 
-      <div className="admin-container">
-        <div className="admin-sidebar">
+      <div className="staff-container">
+        <div className="staff-sidebar">
           <div className="sidebar-menu">
             <button 
               className={`sidebar-item ${activeTab === 'overview' ? 'active' : ''}`}
@@ -269,56 +270,24 @@ const AdminPage = () => {
               <FaChartBar /> Overview
             </button>
             <button 
-              className={`sidebar-item ${activeTab === 'tables' ? 'active' : ''}`}
-              onClick={() => setActiveTab('tables')}
-            >
-              <FaTable /> Tables
-            </button>
-            <button 
               className={`sidebar-item ${activeTab === 'reservations' ? 'active' : ''}`}
               onClick={() => setActiveTab('reservations')}
             >
               <FaUsers /> Reservations
             </button>
             <button 
-              className={`sidebar-item ${activeTab === 'calendar' ? 'active' : ''}`}
-              onClick={() => setActiveTab('calendar')}
+              className={`sidebar-item ${activeTab === 'today' ? 'active' : ''}`}
+              onClick={() => setActiveTab('today')}
             >
-              <FaCalendarAlt /> Calendar
-            </button>
-            <button 
-              className={`sidebar-item ${activeTab === 'settings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('settings')}
-            >
-              <FaCog /> Settings
+              <FaCalendarAlt /> Today's Schedule
             </button>
           </div>
         </div>
 
-        <div className="admin-content">
+        <div className="staff-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
               <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#3498db' }}>
-                    <FaTable />
-                  </div>
-                  <div className="stat-info">
-                    <h3>{stats.totalTables}</h3>
-                    <p>Total Tables</p>
-                  </div>
-                </div>
-                
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#27ae60' }}>
-                    <FaCheck />
-                  </div>
-                  <div className="stat-info">
-                    <h3>{stats.availableTables}</h3>
-                    <p>Available Tables</p>
-                  </div>
-                </div>
-                
                 <div className="stat-card">
                   <div className="stat-icon" style={{ background: '#9b59b6' }}>
                     <FaUsers />
@@ -338,6 +307,26 @@ const AdminPage = () => {
                     <p>Today's Reservations</p>
                   </div>
                 </div>
+                
+                <div className="stat-card">
+                  <div className="stat-icon" style={{ background: '#f39c12' }}>
+                    <FaClock />
+                  </div>
+                  <div className="stat-info">
+                    <h3>{stats.pendingReservations}</h3>
+                    <p>Pending</p>
+                  </div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-icon" style={{ background: '#27ae60' }}>
+                    <FaCheck />
+                  </div>
+                  <div className="stat-info">
+                    <h3>{stats.confirmedReservations}</h3>
+                    <p>Confirmed</p>
+                  </div>
+                </div>
               </div>
 
               <div className="charts-section">
@@ -345,7 +334,9 @@ const AdminPage = () => {
                   <h3>Reservation Status</h3>
                   <div className="status-chart">
                     {['pending', 'confirmed', 'cancelled', 'completed'].map(status => {
-                      const count = reservations.filter(r => r.status === status).length;
+                      const count = Array.isArray(reservations) 
+                        ? reservations.filter(r => r.status === status).length 
+                        : 0;
                       const percentage = reservations.length > 0 ? (count / reservations.length) * 100 : 0;
                       return (
                         <div key={status} className="status-item">
@@ -400,147 +391,6 @@ const AdminPage = () => {
             </div>
           )}
 
-          {activeTab === 'tables' && (
-            <div className="tables-tab">
-              <div className="section-header">
-                <h2>Table Management</h2>
-                <button 
-                  className="btn-primary"
-                  onClick={() => setShowTableForm(!showTableForm)}
-                >
-                  <FaPlus /> Add New Table
-                </button>
-              </div>
-
-              {showTableForm && (
-                <div className="table-form-card">
-                  <h3>Add New Table</h3>
-                  <form onSubmit={handleCreateTable}>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label>Table Number</label>
-                        <input
-                          type="text"
-                          value={newTable.tableNumber}
-                          onChange={(e) => setNewTable({...newTable, tableNumber: e.target.value})}
-                          required
-                          placeholder="e.g., A1, B2"
-                        />
-                      </div>
-                      
-                      <div className="form-group">
-                        <label>Capacity</label>
-                        <select
-                          value={newTable.capacity}
-                          onChange={(e) => setNewTable({...newTable, capacity: parseInt(e.target.value)})}
-                        >
-                          {[2, 4, 6, 8, 10, 12].map(num => (
-                            <option key={num} value={num}>{num} people</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Location</label>
-                        <select
-                          value={newTable.location}
-                          onChange={(e) => setNewTable({...newTable, location: e.target.value})}
-                        >
-                          <option value="Main Hall">Main Hall</option>
-                          <option value="Window">Window</option>
-                          <option value="Private Room">Private Room</option>
-                          <option value="Patio">Patio</option>
-                          <option value="Bar">Bar</option>
-                          <option value="Garden">Garden</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Features</label>
-                      <div className="features-input-group">
-                        <input
-                          type="text"
-                          value={featureInput}
-                          onChange={(e) => setFeatureInput(e.target.value)}
-                          placeholder="Add a feature (e.g., window, quiet, VIP)"
-                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                        />
-                        <button type="button" onClick={addFeature} className="btn-add-feature">
-                          Add
-                        </button>
-                      </div>
-                      <div className="features-tags">
-                        {newTable.features.map((feature, index) => (
-                          <span key={index} className="feature-tag">
-                            {feature}
-                            <button type="button" onClick={() => removeFeature(index)} className="remove-feature">
-                              <FaTimes />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="form-actions">
-                      <button type="submit" className="btn-submit">
-                        Create Table
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-cancel"
-                        onClick={() => setShowTableForm(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-
-              <div className="tables-grid">
-                {tables.map(table => (
-                  <div key={table.id} className="table-card">
-                    <div className="table-header">
-                      <h3>Table {table.tableNumber}</h3>
-                      <span className={`table-status ${table.isAvailable ? 'available' : 'booked'}`}>
-                        {table.isAvailable ? 'Available' : 'Booked'}
-                      </span>
-                    </div>
-                    <div className="table-details">
-                      <div className="detail">
-                        <span className="label">Capacity:</span>
-                        <span className="value">{table.capacity} people</span>
-                      </div>
-                      <div className="detail">
-                        <span className="label">Location:</span>
-                        <span className="value">{table.location}</span>
-                      </div>
-                      {table.features && table.features.length > 0 && (
-                        <div className="detail">
-                          <span className="label">Features:</span>
-                          <div className="features">
-                            {table.features.map((feature, idx) => (
-                              <span key={idx} className="feature-badge">{feature}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="table-actions">
-                      <button className="btn-edit">
-                        <FaEdit /> Edit
-                      </button>
-                      <button className="btn-delete">
-                        <FaTrash /> Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {activeTab === 'reservations' && (
             <div className="reservations-tab">
               <div className="section-header">
@@ -564,7 +414,7 @@ const AdminPage = () => {
               </div>
 
               <div className="reservations-table-container">
-                <table className="admin-table">
+                <table className="staff-table">
                   <thead>
                     <tr>
                       <th>Customer</th>
@@ -716,7 +566,7 @@ const AdminPage = () => {
                                 style={{ backgroundColor: getStatusColor(reservation.status) }}
                               >
                                 {reservation.status}
-                                </span>
+                              </span>
                             </td>
                             <td>
                               <div className="action-buttons">
@@ -760,92 +610,98 @@ const AdminPage = () => {
                     ))}
                   </tbody>
                 </table>
+                
                 {filteredReservations.length === 0 && (
-              <div className="no-data">
-                <p>No reservations found</p>
+                  <div className="no-data">
+                    <p>No reservations found</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {activeTab === 'calendar' && (
-        <div className="calendar-tab">
-          <h2>Reservation Calendar</h2>
-          <div className="calendar-placeholder">
-            <div className="calendar-info">
-              <FaCalendarAlt className="calendar-icon" />
-              <h3>Calendar View</h3>
-              <p>View and manage reservations by date</p>
-              <div className="calendar-stats">
-                <div className="calendar-stat">
-                  <strong>{reservations.length}</strong>
+          {activeTab === 'today' && (
+            <div className="today-tab">
+              <h2>Today's Schedule</h2>
+              <div className="today-date">
+                <FaCalendarAlt />
+                <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              
+              <div className="today-stats">
+                <div className="today-stat">
+                  <strong>{stats.todayReservations}</strong>
                   <span>Total Reservations</span>
                 </div>
-                <div className="calendar-stat">
-                  <strong>{new Set(reservations.map(r => r.date)).size}</strong>
-                  <span>Days with Reservations</span>
+                <div className="today-stat">
+                  <strong>{Array.isArray(reservations) ? reservations.filter(r => r.date === new Date().toISOString().split('T')[0] && r.status === 'confirmed').length : 0}</strong>
+                  <span>Confirmed</span>
+                </div>
+                <div className="today-stat">
+                  <strong>{Array.isArray(reservations) ? reservations.filter(r => r.date === new Date().toISOString().split('T')[0] && r.status === 'pending').length : 0}</strong>
+                  <span>Pending</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {activeTab === 'settings' && (
-        <div className="settings-tab">
-          <h2>Restaurant Settings</h2>
-          <div className="settings-grid">
-            <div className="setting-card">
-              <h3>User Management</h3>
-              <div className="setting-content">
-                <p>Register new staff members or administrators</p>
-                <button 
-                  className="btn-setting"
-                  onClick={() => navigate('/login', { state: { adminRegistering: true } })}
-                >
-                  Register New User
-                </button>
+              <div className="today-reservations">
+                {Array.isArray(reservations) && reservations
+                  .filter(r => r.date === new Date().toISOString().split('T')[0])
+                  .sort((a, b) => a.time.localeCompare(b.time))
+                  .map(reservation => (
+                    <div key={reservation.id} className="today-reservation-card">
+                      <div className="today-reservation-time">
+                        <FaClock />
+                        <strong>{reservation.time}</strong>
+                      </div>
+                      <div className="today-reservation-details">
+                        <h4>{reservation.customerName}</h4>
+                        <p>{reservation.partySize} people • Table {reservation.tableNumber}</p>
+                        <p className="contact">{reservation.customerPhone}</p>
+                        {reservation.notes && (
+                          <p className="notes">📝 {reservation.notes}</p>
+                        )}
+                      </div>
+                      <div className="today-reservation-status">
+                        <span 
+                          className="status-badge"
+                          style={{ backgroundColor: getStatusColor(reservation.status) }}
+                        >
+                          {reservation.status}
+                        </span>
+                        <div className="today-actions">
+                          {reservation.status === 'pending' && (
+                            <button 
+                              className="btn-quick-action confirm"
+                              onClick={() => handleUpdateReservationStatus(reservation.id, 'confirmed')}
+                            >
+                              Confirm
+                            </button>
+                          )}
+                          {reservation.status === 'confirmed' && (
+                            <button 
+                              className="btn-quick-action complete"
+                              onClick={() => handleUpdateReservationStatus(reservation.id, 'completed')}
+                            >
+                              Complete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                
+                {(!Array.isArray(reservations) || reservations.filter(r => r.date === new Date().toISOString().split('T')[0]).length === 0) && (
+                  <div className="no-data">
+                    <p>No reservations for today</p>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="setting-card">
-              <h3>Business Hours</h3>
-              <div className="setting-content">
-                <p>Configure your restaurant's operating hours</p>
-                <button className="btn-setting">Configure</button>
-              </div>
-            </div>
-            
-            <div className="setting-card">
-              <h3>Reservation Rules</h3>
-              <div className="setting-content">
-                <p>Set maximum party size, lead time, etc.</p>
-                <button className="btn-setting">Configure</button>
-              </div>
-            </div>
-            
-            <div className="setting-card">
-              <h3>Notification Settings</h3>
-              <div className="setting-content">
-                <p>Configure email and SMS notifications</p>
-                <button className="btn-setting">Configure</button>
-              </div>
-            </div>
-            
-            <div className="setting-card">
-              <h3>Table Layout</h3>
-              <div className="setting-content">
-                <p>Manage table arrangement and sections</p>
-                <button className="btn-setting">Configure</button>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
-  </div>
-</div>
-);
+  );
 };
-export default AdminPage;
+
+export default StaffPage;

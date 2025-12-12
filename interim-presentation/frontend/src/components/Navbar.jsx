@@ -50,7 +50,7 @@ const Navbar = () => {
             </Link>
           )}
           
-          {isStaff && (
+          {isStaff && !isAdmin && (
             <Link to="/staff" className="nav-link">
               <FaUserCog className="nav-icon" /> Staff Panel
             </Link>

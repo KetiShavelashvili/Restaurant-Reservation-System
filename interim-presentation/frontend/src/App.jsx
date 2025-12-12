@@ -6,6 +6,7 @@ import Navbar from './components/Navbar.jsx'
 import HomePage from './pages/HomePage.jsx'
 import ReservationPage from './pages/ReservationPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
+import StaffPage from './pages/StaffPage.jsx'
 import ReservationsList from './pages/ReservationsList.jsx'
 import Login from './pages/Login.jsx'
 import CustomerDashboard from './pages/CustomerDashboard.jsx'
@@ -62,8 +63,8 @@ function App() {
                 <Route
                   path="/staff"
                   element={
-                    <ProtectedRoute allowedRoles={['admin', 'staff']}>
-                      <AdminPage />
+                    <ProtectedRoute allowedRoles={['staff']}>
+                      <StaffPage />
                     </ProtectedRoute>
                   }
                 />
