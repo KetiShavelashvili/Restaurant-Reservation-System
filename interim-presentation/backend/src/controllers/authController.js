@@ -1,6 +1,6 @@
 const { users, sessions } = require('../models/userModel');
 
-// Generate simple session token
+
 const generateToken = () => {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 };

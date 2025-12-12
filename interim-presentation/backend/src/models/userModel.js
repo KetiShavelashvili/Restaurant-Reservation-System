@@ -1,4 +1,3 @@
-// Follow the same pattern as your reservationModel.js
 let users = [
   {
     id: 1,
