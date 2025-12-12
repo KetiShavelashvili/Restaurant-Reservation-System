@@ -48,7 +48,7 @@ const Login = () => {
 
       // If admin is registering a user, don't login, just go back to admin page
       if (isAdminRegistering) {
-        alert('✅ User registered successfully!');
+        alert('User registered successfully!');
         navigate('/admin');
         return;
       }

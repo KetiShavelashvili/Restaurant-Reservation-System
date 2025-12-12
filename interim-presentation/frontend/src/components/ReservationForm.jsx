@@ -6,15 +6,20 @@ import './ReservationForm.css';
 const API_URL = 'http://localhost:5000/api';
 
 const ReservationForm = ({ onSuccess }) => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();          // Get logged-in user info
+  const navigate = useNavigate();      // Navigation hook
+
+  // UI states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Table data states
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
-  
+
+  // Form data (pre-fill name/email)
   const [formData, setFormData] = useState({
     customerName: user?.name || '',
     customerEmail: user?.email || '',
@@ -26,6 +31,7 @@ const ReservationForm = ({ onSuccess }) => {
     notes: ''
   });
 
+  // Sync name/email with user when user data changes
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
@@ -36,30 +42,33 @@ const ReservationForm = ({ onSuccess }) => {
     }
   }, [user]);
 
-  // Fetch available tables when party size, date, or time changes
+  // Fetch available tables when: date, time, or party size changes
   useEffect(() => {
     if (formData.partySize && formData.date && formData.time) {
       fetchAvailableTablesForReservation();
     } else {
+      // Reset tables if fields are incomplete
       setAvailableTables([]);
       setSelectedTable(null);
     }
   }, [formData.partySize, formData.date, formData.time]);
 
+  // Fetch all tables, then filter them by: being available having enough capacity for selected party size
   const fetchAvailableTablesForReservation = async () => {
     setLoadingTables(true);
+
     try {
       const response = await fetch(`${API_URL}/tables`);
       const data = await response.json();
-      
-      // Filter tables that match the party size and are available
-      const suitable = data.filter(t => 
+
+      // Filter suitable tables
+      const suitable = data.filter(t =>
         t.isAvailable && t.capacity >= formData.partySize
       );
-      
+
       setAvailableTables(suitable);
-      
-      // Auto-select first table if available
+
+      // Auto-select first table
       if (suitable.length > 0 && !selectedTable) {
         setSelectedTable(suitable[0]);
         setFormData(prev => ({
@@ -74,6 +83,7 @@ const ReservationForm = ({ onSuccess }) => {
     }
   };
 
+  // When user selects a table from grid
   const handleTableSelect = (table) => {
     setSelectedTable(table);
     setFormData(prev => ({
@@ -82,15 +92,18 @@ const ReservationForm = ({ onSuccess }) => {
     }));
   };
 
+  // Handle changes for all form inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
     setError('');
-    
-    // Reset selected table when party size changes
+
+    // If party size changes, reset selected table + tableId
     if (name === 'partySize') {
       setSelectedTable(null);
       setFormData(prev => ({
@@ -100,15 +113,16 @@ const ReservationForm = ({ onSuccess }) => {
     }
   };
 
+  // Handle final form submission - POST /reservations
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate table selection
+
+    // Require table selection
     if (!formData.tableId) {
       setError('Please select a table');
       return;
     }
-    
+
     setLoading(true);
     setError('');
     setSuccess(false);
@@ -130,9 +144,10 @@ const ReservationForm = ({ onSuccess }) => {
         throw new Error(data.error || data.message || 'Failed to create reservation');
       }
 
+      // Show success message
       setSuccess(true);
-      
-      // Reset form but keep user info
+
+      // Reset form but keep logged-in user’s name/email
       setFormData({
         customerName: user?.name || '',
         customerEmail: user?.email || '',
@@ -143,15 +158,16 @@ const ReservationForm = ({ onSuccess }) => {
         tableId: '',
         notes: ''
       });
+
       setSelectedTable(null);
       setAvailableTables([]);
 
-      // Call onSuccess callback if provided
+      // Run parent callback if exists
       if (onSuccess) {
         onSuccess();
       }
 
-      // Show success message and redirect after 2 seconds
+      // Auto-redirect to user’s reservation list
       setTimeout(() => {
         navigate('/my-reservations');
       }, 2000);
@@ -164,10 +180,9 @@ const ReservationForm = ({ onSuccess }) => {
     }
   };
 
-  // Get today's date in YYYY-MM-DD format for min date
+  // Generate min/max date validation (today -> 60 days forward)
   const today = new Date().toISOString().split('T')[0];
-  
-  // Get max date (60 days from now)
+
   const maxDate = new Date();
   maxDate.setDate(maxDate.getDate() + 60);
   const maxDateString = maxDate.toISOString().split('T')[0];
@@ -179,22 +194,27 @@ const ReservationForm = ({ onSuccess }) => {
         <p>Fill in the details below to reserve your table</p>
       </div>
 
+      {/* Success message */}
       {success && (
         <div className="alert alert-success">
-          ✅ Reservation created successfully! Redirecting to your reservations...
+          Reservation created successfully! Redirecting to your reservations...
         </div>
       )}
 
+      {/* Error message */}
       {error && (
         <div className="alert alert-error">
-          ❌ {error}
+          {error}
         </div>
       )}
 
+      {/* Main reservation form */}
       <form onSubmit={handleSubmit} className="reservation-form">
+
+        {/* PERSONAL INFO */}
         <div className="form-section">
           <h3>Personal Information</h3>
-          
+
           <div className="form-group">
             <label htmlFor="customerName">
               Full Name <span className="required">*</span>
@@ -207,11 +227,12 @@ const ReservationForm = ({ onSuccess }) => {
               onChange={handleChange}
               required
               placeholder="Enter your full name"
-              disabled={!!user}
+              disabled={!!user}     // user can't change auto-filled info
             />
           </div>
 
           <div className="form-row">
+            {/* Email */}
             <div className="form-group">
               <label htmlFor="customerEmail">
                 Email <span className="required">*</span>
@@ -228,6 +249,7 @@ const ReservationForm = ({ onSuccess }) => {
               />
             </div>
 
+            {/* Phone Number */}
             <div className="form-group">
               <label htmlFor="customerPhone">
                 Phone Number <span className="required">*</span>
@@ -245,10 +267,12 @@ const ReservationForm = ({ onSuccess }) => {
           </div>
         </div>
 
+        {/* RESERVATION DETAILS */}
         <div className="form-section">
           <h3>Reservation Details</h3>
-          
+
           <div className="form-row">
+            {/* Date */}
             <div className="form-group">
               <label htmlFor="date">
                 Date <span className="required">*</span>
@@ -265,6 +289,7 @@ const ReservationForm = ({ onSuccess }) => {
               />
             </div>
 
+            {/* Time */}
             <div className="form-group">
               <label htmlFor="time">
                 Time <span className="required">*</span>
@@ -283,6 +308,7 @@ const ReservationForm = ({ onSuccess }) => {
             </div>
           </div>
 
+          {/* Party Size */}
           <div className="form-group">
             <label htmlFor="partySize">
               Party Size <span className="required">*</span>
@@ -294,7 +320,7 @@ const ReservationForm = ({ onSuccess }) => {
               onChange={handleChange}
               required
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+              {[1,2,3,4,5,6,7,8,9,10,11,12].map(num => (
                 <option key={num} value={num}>
                   {num} {num === 1 ? 'person' : 'people'}
                 </option>
@@ -302,25 +328,30 @@ const ReservationForm = ({ onSuccess }) => {
             </select>
           </div>
 
-          {/* Table Selection Section */}
+          {/* TABLE SELECTION */}
           {formData.date && formData.time && formData.partySize && (
             <div className="form-group table-selection">
               <label>
                 Select Table <span className="required">*</span>
               </label>
-              
+
+              {/* While loading tables */}
               {loadingTables ? (
                 <div className="loading-tables">
                   <div className="spinner"></div>
                   <p>Finding available tables...</p>
                 </div>
+
               ) : availableTables.length === 0 ? (
+                // No tables found
                 <div className="no-tables-message">
                   <p>😔 No tables available for {formData.partySize} people at this time.</p>
                   <small>Please try a different time or party size.</small>
                 </div>
+
               ) : (
                 <>
+                  {/* Table grid */}
                   <div className="tables-grid-selection">
                     {availableTables.map(table => (
                       <div
@@ -329,16 +360,20 @@ const ReservationForm = ({ onSuccess }) => {
                         onClick={() => handleTableSelect(table)}
                       >
                         <div className="table-number">Table {table.tableNumber}</div>
+
                         <div className="table-info">
                           <div className="table-capacity">
                             <span className="icon">👥</span>
                             <span>{table.capacity} seats</span>
                           </div>
+
                           <div className="table-location">
                             <span className="icon">📍</span>
                             <span>{table.location}</span>
                           </div>
                         </div>
+
+                        {/* Optional small features list */}
                         {table.features && table.features.length > 0 && (
                           <div className="table-features">
                             {table.features.slice(0, 3).map((feature, idx) => (
@@ -348,12 +383,15 @@ const ReservationForm = ({ onSuccess }) => {
                             ))}
                           </div>
                         )}
+
+                        {/* Selected badge */}
                         {selectedTable?.id === table.id && (
                           <div className="selected-badge">✓ Selected</div>
                         )}
                       </div>
                     ))}
                   </div>
+
                   <small className="form-hint">
                     {availableTables.length} table{availableTables.length !== 1 ? 's' : ''} available for your party
                   </small>
@@ -362,6 +400,7 @@ const ReservationForm = ({ onSuccess }) => {
             </div>
           )}
 
+          {/* OPTIONAL MESSAGE */}
           <div className="form-group">
             <label htmlFor="notes">
               Special Requests (Optional)
@@ -377,18 +416,21 @@ const ReservationForm = ({ onSuccess }) => {
           </div>
         </div>
 
+        {/* FORM FOOTER */}
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn-submit"
             disabled={loading}
           >
             {loading ? 'Processing...' : 'Confirm Reservation'}
           </button>
+
           <p className="form-note">
             * By submitting this form, you agree to our reservation policy
           </p>
         </div>
+
       </form>
     </div>
   );

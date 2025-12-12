@@ -32,7 +32,7 @@ exports.register = (req, res) => {
       id: users.length + 1,
       name,
       email,
-      password, // In production, hash this!
+      password,
       role: role || 'customer'
     };
 

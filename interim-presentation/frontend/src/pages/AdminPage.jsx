@@ -92,13 +92,13 @@ const AdminPage = () => {
           features: []
         });
         setShowTableForm(false);
-        alert('✅ Table created successfully!');
+        alert('Table created successfully!');
       } else {
-        alert('❌ Failed to create table');
+        alert('Failed to create table');
       }
     } catch (err) {
       console.error('Error creating table:', err);
-      alert('❌ Failed to create table');
+      alert('Failed to create table');
     }
   };
 
@@ -144,14 +144,14 @@ const AdminPage = () => {
       if (response.ok) {
         await fetchReservations();
         setEditingReservation(null);
-        alert('✅ Reservation updated successfully!');
+        alert('Reservation updated successfully!');
       } else {
         const error = await response.json();
-        alert(`❌ Failed to update reservation: ${error.error || 'Unknown error'}`);
+        alert(`Failed to update reservation: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating reservation:', error);
-      alert('❌ Failed to update reservation');
+      alert('Failed to update reservation');
     }
   };
 
@@ -168,13 +168,13 @@ const AdminPage = () => {
 
       if (response.ok) {
         await fetchReservations();
-        alert(`✅ Reservation ${newStatus} successfully!`);
+        alert(`Reservation ${newStatus} successfully!`);
       } else {
-        alert('❌ Failed to update reservation');
+        alert('Failed to update reservation');
       }
     } catch (error) {
       console.error('Error updating reservation:', error);
-      alert('❌ Failed to update reservation');
+      alert('Failed to update reservation');
     }
   };
 
@@ -194,13 +194,13 @@ const AdminPage = () => {
       if (response.ok) {
         await fetchReservations();
         await fetchTables();
-        alert('✅ Reservation deleted successfully!');
+        alert('Reservation deleted successfully!');
       } else {
-        alert('❌ Failed to delete reservation');
+        alert('Failed to delete reservation');
       }
     } catch (error) {
       console.error('Error deleting reservation:', error);
-      alert('❌ Failed to delete reservation');
+      alert('Failed to delete reservation');
     }
   };
 
@@ -688,7 +688,7 @@ const AdminPage = () => {
                               <div className="customer-info">
                                 <strong>{reservation.customerName}</strong>
                                 {reservation.notes && (
-                                  <small title={reservation.notes}>📝 Note</small>
+                                  <small title={reservation.notes}>Note</small>
                                 )}
                               </div>
                             </td>

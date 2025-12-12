@@ -74,13 +74,13 @@ const CustomerDashboard = () => {
       if (response.ok) {
         await fetchMyReservations();
         setEditingReservation(null);
-        alert('✅ Reservation updated successfully!');
+        alert('Reservation updated successfully!');
       } else {
-        alert('❌ Failed to update reservation');
+        alert('Failed to update reservation');
       }
     } catch (error) {
       console.error('Error updating reservation:', error);
-      alert('❌ Error updating reservation');
+      alert('Error updating reservation');
     }
   };
 
@@ -99,13 +99,13 @@ const CustomerDashboard = () => {
 
       if (response.ok) {
         await fetchMyReservations();
-        alert('✅ Reservation cancelled successfully!');
+        alert('Reservation cancelled successfully!');
       } else {
-        alert('❌ Failed to cancel reservation');
+        alert('Failed to cancel reservation');
       }
     } catch (error) {
       console.error('Error cancelling reservation:', error);
-      alert('❌ Error cancelling reservation');
+      alert('Error cancelling reservation');
     }
   };
 

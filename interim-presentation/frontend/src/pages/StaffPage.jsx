@@ -123,14 +123,14 @@ const StaffPage = () => {
       if (response.ok) {
         await fetchReservations();
         setEditingReservation(null);
-        alert('✅ Reservation updated successfully!');
+        alert('Reservation updated successfully!');
       } else {
         const error = await response.json();
-        alert(`❌ Failed to update reservation: ${error.error || 'Unknown error'}`);
+        alert(`Failed to update reservation: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating reservation:', error);
-      alert('❌ Failed to update reservation');
+      alert('Failed to update reservation');
     }
   };
 
@@ -147,13 +147,13 @@ const StaffPage = () => {
 
       if (response.ok) {
         await fetchReservations();
-        alert(`✅ Reservation ${newStatus} successfully!`);
+        alert(`Reservation ${newStatus} successfully!`);
       } else {
-        alert('❌ Failed to update reservation');
+        alert('Failed to update reservation');
       }
     } catch (error) {
       console.error('Error updating reservation:', error);
-      alert('❌ Failed to update reservation');
+      alert('Failed to update reservation');
     }
   };
 
@@ -172,13 +172,13 @@ const StaffPage = () => {
 
       if (response.ok) {
         await fetchReservations();
-        alert('✅ Reservation deleted successfully!');
+        alert('Reservation deleted successfully!');
       } else {
-        alert('❌ Failed to delete reservation');
+        alert('Failed to delete reservation');
       }
     } catch (error) {
       console.error('Error deleting reservation:', error);
-      alert('❌ Failed to delete reservation');
+      alert('Failed to delete reservation');
     }
   };
 
@@ -232,7 +232,7 @@ const StaffPage = () => {
           textAlign: 'center',
           color: '#e74c3c'
         }}>
-          <h2>⚠️ Error</h2>
+          <h2>Error</h2>
           <p>{error}</p>
           <button 
             onClick={fetchReservations}
@@ -538,7 +538,7 @@ const StaffPage = () => {
                               <div className="customer-info">
                                 <strong>{reservation.customerName}</strong>
                                 {reservation.notes && (
-                                  <small title={reservation.notes}>📝 Note</small>
+                                  <small title={reservation.notes}>Note</small>
                                 )}
                               </div>
                             </td>
@@ -658,7 +658,7 @@ const StaffPage = () => {
                         <p>{reservation.partySize} people • Table {reservation.tableNumber}</p>
                         <p className="contact">{reservation.customerPhone}</p>
                         {reservation.notes && (
-                          <p className="notes">📝 {reservation.notes}</p>
+                          <p className="notes">{reservation.notes}</p>
                         )}
                       </div>
                       <div className="today-reservation-status">

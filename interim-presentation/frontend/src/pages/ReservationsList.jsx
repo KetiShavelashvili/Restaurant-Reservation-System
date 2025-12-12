@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useReservation } from '../context/ReservationContext.jsx';
 import './ReservationsList.css';
 
+// Reservation list
 const ReservationsList = () => {
   const { reservations, loading } = useReservation();
   const [searchTerm, setSearchTerm] = useState('');
