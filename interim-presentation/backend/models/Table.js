@@ -1,23 +1,23 @@
-﻿const mongoose = require('mongoose');
+﻿const mongoose = require("mongoose");
 
 const tableSchema = new mongoose.Schema({
   tableNumber: {
     type: String,
-    required: [true, 'Please add a table number'],
+    required: [true, "Please add a table number"],
     unique: true,
     trim: true
   },
   capacity: {
     type: Number,
-    required: [true, 'Please add table capacity'],
-    min: [1, 'Capacity must be at least 1'],
-    max: [20, 'Capacity cannot exceed 20']
+    required: [true, "Please add table capacity"],
+    min: [1, "Capacity must be at least 1"],
+    max: [20, "Capacity cannot exceed 20"]
   },
   location: {
     type: String,
-    required: [true, 'Please add table location'],
-    enum: ['window', 'main hall', 'private room', 'terrace', 'bar'],
-    default: 'main hall'
+    required: [true, "Please add table location"],
+    enum: ["window", "main hall", "private room", "terrace", "bar"],
+    default: "main hall"
   },
   isAvailable: {
     type: Boolean,
@@ -25,7 +25,7 @@ const tableSchema = new mongoose.Schema({
   },
   features: [{
     type: String,
-    enum: ['window', 'quiet', 'private', 'VIP', 'wheelchair accessible', 'outdoor']
+    enum: ["window", "quiet", "private", "VIP", "wheelchair accessible", "outdoor", "central"]
   }],
   createdAt: {
     type: Date,
@@ -33,4 +33,4 @@ const tableSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Table', tableSchema);
+module.exports = mongoose.model("Table", tableSchema);
