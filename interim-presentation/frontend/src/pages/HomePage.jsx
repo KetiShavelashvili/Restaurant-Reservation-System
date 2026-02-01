@@ -112,25 +112,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="stats-section">
-        <div className="stat-card">
-          <h3>150+</h3>
-          <p>Happy Customers</p>
-        </div>
-        <div className="stat-card">
-          <h3>98%</h3>
-          <p>Satisfaction Rate</p>
-        </div>
-        <div className="stat-card">
-          <h3>24/7</h3>
-          <p>Online Booking</p>
-        </div>
-        <div className="stat-card">
-          <h3>50+</h3>
-          <p>Tables Available</p>
-        </div>
-      </div>
 
       {/* CTA Section */}
       <div className="cta-section">
