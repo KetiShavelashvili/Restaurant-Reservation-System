@@ -1,66 +1,54 @@
-﻿const mongoose = require("mongoose");
+﻿const mongoose = require('mongoose');
 
-const reservationSchema = new mongoose.Schema({
+const ReservationSchema = new mongoose.Schema({
   customerName: {
-    type: String,
-    required: [true, "Please add customer name"],
-    trim: true
-  },
-  customerEmail: {
-    type: String,
-    required: [true, "Please add customer email"],
-    lowercase: true,
-    trim: true
-  },
-  customerPhone: {
-    type: String,
-    required: [true, "Please add customer phone"],
-    trim: true
-  },
-  date: {
-    type: Date,
-    required: [true, "Please add reservation date"]
-  },
-  time: {
-    type: String,
-    required: [true, "Please add reservation time"],
-    match: [/^([01]\d|2[0-3]):([0-5]\d)$/, "Please use HH:MM format"]
-  },
-  partySize: {
-    type: Number,
-    required: [true, "Please add party size"],
-    min: [1, "Party size must be at least 1"],
-    max: [20, "Party size cannot exceed 20"]
-  },
-  tableId: {
-    type: String,
-    required: [true, "Please select a table"]
-  },
-  tableNumber: {
     type: String,
     required: true
   },
-  status: {
+  customerEmail: {
     type: String,
-    enum: ["pending", "confirmed", "cancelled", "completed", "no-show"],
-    default: "pending"
+    required: true
   },
+  customerPhone: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: String,
+    required: true
+  },
+  time: {
+    type: String,
+    required: true
+  },
+  partySize: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  tableNumber: {
+    type: String,
+    default: ''
+  },
+  tables: [{
+    tableId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Table'
+    },
+    tableNumber: String,
+    capacity: Number
+  }],
   notes: {
     type: String,
-    trim: true,
-    maxlength: [500, "Notes cannot exceed 500 characters"]
+    default: ''
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    default: 'pending'
   }
+}, {
+  timestamps: true
 });
 
-// SIMPLE VERSION - Remove the buggy pre-save hook
-// We'll handle updatedAt manually
-
-module.exports = mongoose.model("Reservation", reservationSchema);
+module.exports = mongoose.model('Reservation', ReservationSchema);

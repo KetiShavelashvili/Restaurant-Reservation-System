@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import RestaurantFloorPlan from './RestaurantFloorPlan';
 import './ReservationForm.css';
 
 const API_URL = 'http://localhost:5000/api';
 
 const ReservationForm = ({ onSuccess }) => {
-  const { user } = useAuth();          // Get logged-in user info
-  const navigate = useNavigate();      // Navigation hook
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // UI states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Table data states
-  const [availableTables, setAvailableTables] = useState([]);
-  const [loadingTables, setLoadingTables] = useState(false);
+  // Selected table state
   const [selectedTable, setSelectedTable] = useState(null);
 
   // Form data (pre-fill name/email)
@@ -42,54 +41,14 @@ const ReservationForm = ({ onSuccess }) => {
     }
   }, [user]);
 
-  // Fetch available tables when: date, time, or party size changes
-  useEffect(() => {
-    if (formData.partySize && formData.date && formData.time) {
-      fetchAvailableTablesForReservation();
-    } else {
-      // Reset tables if fields are incomplete
-      setAvailableTables([]);
-      setSelectedTable(null);
-    }
-  }, [formData.partySize, formData.date, formData.time]);
-
-  // Fetch all tables, then filter them by: being available having enough capacity for selected party size
-  const fetchAvailableTablesForReservation = async () => {
-    setLoadingTables(true);
-
-    try {
-      const response = await fetch(`${API_URL}/tables`);
-      const data = await response.json();
-
-      // Filter suitable tables
-      const suitable = data.filter(t =>
-        t.isAvailable && t.capacity >= formData.partySize
-      );
-
-      setAvailableTables(suitable);
-
-      // Auto-select first table
-      if (suitable.length > 0 && !selectedTable) {
-        setSelectedTable(suitable[0]);
-        setFormData(prev => ({
-          ...prev,
-          tableId: suitable[0].id
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching tables:', error);
-    } finally {
-      setLoadingTables(false);
-    }
-  };
-
-  // When user selects a table from grid
+  // Handle table selection from floor plan
   const handleTableSelect = (table) => {
     setSelectedTable(table);
     setFormData(prev => ({
       ...prev,
       tableId: table.id
     }));
+    setError(''); // Clear any errors
   };
 
   // Handle changes for all form inputs
@@ -103,8 +62,8 @@ const ReservationForm = ({ onSuccess }) => {
 
     setError('');
 
-    // If party size changes, reset selected table + tableId
-    if (name === 'partySize') {
+    // If party size, date, or time changes, reset selected table
+    if (name === 'partySize' || name === 'date' || name === 'time') {
       setSelectedTable(null);
       setFormData(prev => ({
         ...prev,
@@ -113,13 +72,13 @@ const ReservationForm = ({ onSuccess }) => {
     }
   };
 
-  // Handle final form submission - POST /reservations
+  // Handle final form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Require table selection
     if (!formData.tableId) {
-      setError('Please select a table');
+      setError('Please select a table from the floor plan below');
       return;
     }
 
@@ -147,7 +106,7 @@ const ReservationForm = ({ onSuccess }) => {
       // Show success message
       setSuccess(true);
 
-      // Reset form but keep logged-in user’s name/email
+      // Reset form but keep logged-in user's name/email
       setFormData({
         customerName: user?.name || '',
         customerEmail: user?.email || '',
@@ -160,14 +119,13 @@ const ReservationForm = ({ onSuccess }) => {
       });
 
       setSelectedTable(null);
-      setAvailableTables([]);
 
       // Run parent callback if exists
       if (onSuccess) {
         onSuccess();
       }
 
-      // Auto-redirect to user’s reservation list
+      // Auto-redirect to user's reservation list
       setTimeout(() => {
         navigate('/my-reservations');
       }, 2000);
@@ -191,20 +149,20 @@ const ReservationForm = ({ onSuccess }) => {
     <div className="reservation-form-container">
       <div className="form-header">
         <h2>Make a Reservation</h2>
-        <p>Fill in the details below to reserve your table</p>
+        <p>Fill in your details and select your preferred table</p>
       </div>
 
       {/* Success message */}
       {success && (
         <div className="alert alert-success">
-          Reservation created successfully! Redirecting to your reservations...
+          ✅ Reservation created successfully! Redirecting to your reservations...
         </div>
       )}
 
       {/* Error message */}
       {error && (
         <div className="alert alert-error">
-          {error}
+          ❌ {error}
         </div>
       )}
 
@@ -227,7 +185,7 @@ const ReservationForm = ({ onSuccess }) => {
               onChange={handleChange}
               required
               placeholder="Enter your full name"
-              disabled={!!user}     // user can't change auto-filled info
+              disabled={!!user}
             />
           </div>
 
@@ -328,78 +286,6 @@ const ReservationForm = ({ onSuccess }) => {
             </select>
           </div>
 
-          {/* TABLE SELECTION */}
-          {formData.date && formData.time && formData.partySize && (
-            <div className="form-group table-selection">
-              <label>
-                Select Table <span className="required">*</span>
-              </label>
-
-              {/* While loading tables */}
-              {loadingTables ? (
-                <div className="loading-tables">
-                  <div className="spinner"></div>
-                  <p>Finding available tables...</p>
-                </div>
-
-              ) : availableTables.length === 0 ? (
-                // No tables found
-                <div className="no-tables-message">
-                  <p>😔 No tables available for {formData.partySize} people at this time.</p>
-                  <small>Please try a different time or party size.</small>
-                </div>
-
-              ) : (
-                <>
-                  {/* Table grid */}
-                  <div className="tables-grid-selection">
-                    {availableTables.map(table => (
-                      <div
-                        key={table.id}
-                        className={`table-option ${selectedTable?.id === table.id ? 'selected' : ''}`}
-                        onClick={() => handleTableSelect(table)}
-                      >
-                        <div className="table-number">Table {table.tableNumber}</div>
-
-                        <div className="table-info">
-                          <div className="table-capacity">
-                            <span className="icon">👥</span>
-                            <span>{table.capacity} seats</span>
-                          </div>
-
-                          <div className="table-location">
-                            <span className="icon">📍</span>
-                            <span>{table.location}</span>
-                          </div>
-                        </div>
-
-                        {/* Optional small features list */}
-                        {table.features && table.features.length > 0 && (
-                          <div className="table-features">
-                            {table.features.slice(0, 3).map((feature, idx) => (
-                              <span key={idx} className="feature-tag-small">
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Selected badge */}
-                        {selectedTable?.id === table.id && (
-                          <div className="selected-badge">✓ Selected</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <small className="form-hint">
-                    {availableTables.length} table{availableTables.length !== 1 ? 's' : ''} available for your party
-                  </small>
-                </>
-              )}
-            </div>
-          )}
-
           {/* OPTIONAL MESSAGE */}
           <div className="form-group">
             <label htmlFor="notes">
@@ -416,14 +302,25 @@ const ReservationForm = ({ onSuccess }) => {
           </div>
         </div>
 
+        {/* RESTAURANT FLOOR PLAN */}
+        <div className="form-section floor-plan-section">
+          <RestaurantFloorPlan
+            selectedDate={formData.date}
+            selectedTime={formData.time}
+            partySize={formData.partySize}
+            onTableSelect={handleTableSelect}
+            selectedTableId={selectedTable?.id}
+          />
+        </div>
+
         {/* FORM FOOTER */}
         <div className="form-actions">
           <button
             type="submit"
             className="btn-submit"
-            disabled={loading}
+            disabled={loading || !selectedTable}
           >
-            {loading ? 'Processing...' : 'Confirm Reservation'}
+            {loading ? '⏳ Processing...' : selectedTable ? '✓ Confirm Reservation' : '⚠️ Select a Table to Continue'}
           </button>
 
           <p className="form-note">

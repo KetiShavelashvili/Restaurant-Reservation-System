@@ -3,6 +3,7 @@ import { ReservationProvider } from './context/ReservationContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Navbar from './components/Navbar.jsx'
+import Footer from './components/Footer.jsx'
 import HomePage from './pages/HomePage.jsx'
 import ReservationPage from './pages/ReservationPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
@@ -19,7 +20,7 @@ function App() {
         <Router>
           <div className="App">
             <Navbar />
-            <div className="container">
+            <div className="main-content">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<Login />} />
@@ -72,6 +73,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </div>
+            <Footer />
           </div>
         </Router>
       </ReservationProvider>
