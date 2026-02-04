@@ -12,28 +12,6 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        
-        {/* Restaurant Info */}
-        <div className="footer-section">
-          <h3 className="footer-logo">
-            <FaUtensils /> Table Reserve
-          </h3>
-          <p className="footer-description">
-            Experience exceptional dining with our easy-to-use reservation system. 
-            Book your perfect table and create unforgettable memories.
-          </p>
-          <div className="social-links">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-              <FaFacebookF />
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <FaInstagram />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-              <FaTwitter />
-            </a>
-          </div>
-        </div>
 
         {/* Contact Information */}
         <div className="footer-section">

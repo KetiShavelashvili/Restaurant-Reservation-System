@@ -3,13 +3,13 @@
   background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
   color: #ecf0f1;
   margin-top: 60px;
-  padding-top: 50px;
+  padding-top: 30px;
 }
 
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 40px;
+  padding: 0 20px 20px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 40px;
@@ -76,7 +76,6 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  color: #bdc3c7;
   font-size: 0.95rem;
 }
 
@@ -89,6 +88,7 @@
 
 .contact-item span {
   line-height: 1.5;
+  color: #bdc3c7;
 }
 
 /* Hours Info */
@@ -118,7 +118,7 @@
 }
 
 .hours-item strong {
-  color: white;
+  color: rgb(200, 204, 213);
   font-size: 0.95rem;
 }
 
@@ -154,11 +154,11 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0px;
 }
 
 .policy-list li {
-  color: #bdc3c7;
+  color: #9da8a9 !important;
   font-size: 0.9rem;
   padding-left: 20px;
   position: relative;
