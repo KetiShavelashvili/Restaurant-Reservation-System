@@ -4,7 +4,6 @@ const connectDB = async () => {
   try {
     console.log('🔗 Connecting to MongoDB...');
     
-    // For newer MongoDB versions (6.0+), remove the old options
     const conn = await mongoose.connect(
       process.env.MONGODB_URI || 'mongodb://localhost:27017/restaurant_reservation'
     );

@@ -134,16 +134,12 @@ const RestaurantFloorPlan = ({
           {/* Left Side - Window Section */}
           <div className="window-section">
             <div className="section-label">Window View</div>
-            <div className="window-wall">🪟 🪟 🪟</div>
-            <div className="table-area">
-              {windowTables.map((table, idx) => (
+            <div className="window-wall">🪟 🪟 🪟 </div>
+            <div className="window-tables-grid">
+              {windowTables.map((table) => (
                 <div
                   key={table.id}
                   className={`floor-table ${getTableStatus(table)}`}
-                  style={{ 
-                    gridColumn: idx === 0 ? '1' : idx === 1 ? '3' : '5',
-                    gridRow: '1'
-                  }}
                   onClick={() => handleTableClick(table)}
                   title={`Table ${table.tableNumber} - ${table.capacity} seats`}
                 >
@@ -158,8 +154,10 @@ const RestaurantFloorPlan = ({
                     )}
                   </div>
                   <div className="table-chairs">
-                    <FaChair className="chair top" />
-                    <FaChair className="chair bottom" />
+                    <FaChair className="chair top-left" />
+                    <FaChair className="chair top-right" />
+                    <FaChair className="chair bottom-right" />
+                    <FaChair className="chair bottom-left" />
                   </div>
                 </div>
               ))}
@@ -170,7 +168,7 @@ const RestaurantFloorPlan = ({
           <div className="main-hall-section">
             <div className="section-label">Main Dining Hall</div>
             <div className="main-hall-grid">
-              {mainHallTables.map((table, idx) => (
+              {mainHallTables.map((table) => (
                 <div
                   key={table.id}
                   className={`floor-table ${getTableStatus(table)}`}

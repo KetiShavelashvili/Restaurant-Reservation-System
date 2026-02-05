@@ -30,9 +30,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// SIMPLE VERSION - No pre-save hook for now
-// We'll hash passwords manually in seed.js
-
 // Method to check password
 userSchema.methods.comparePassword = async function(password) {
   return await bcrypt.compare(password, this.password);

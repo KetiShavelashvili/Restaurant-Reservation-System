@@ -40,14 +40,36 @@ const seedData = async () => {
       role: 'staff'
     });
     
+    // Create customer user
+    console.log('👤 Creating customer user...');
+    const customerPassword = await bcrypt.hash('customer123', 10);
+    const customer = await User.create({
+      name: 'John Doe',
+      email: 'customer@example.com',
+      password: customerPassword,
+      role: 'customer'
+    });
+    
     // Create tables
     console.log('🪑 Creating tables...');
     const tables = [
-      { tableNumber: 'A1', capacity: 4, location: 'window', features: ['window', 'quiet'] },
-      { tableNumber: 'A2', capacity: 2, location: 'main hall', features: ['central'] },
-      { tableNumber: 'B1', capacity: 6, location: 'private room', features: ['private', 'quiet'] },
-      { tableNumber: 'B2', capacity: 4, location: 'main hall', features: [] },
-      { tableNumber: 'C1', capacity: 8, location: 'private room', features: ['private', 'VIP'] },
+      // Window tables 
+      { tableNumber: 'W1', capacity: 2, location: 'window', features: ['window', 'quiet'], isAvailable: true },
+      { tableNumber: 'W2', capacity: 2, location: 'window', features: ['window', 'quiet'], isAvailable: true },
+      { tableNumber: 'W3', capacity: 4, location: 'window', features: ['window'], isAvailable: true },
+      { tableNumber: 'W4', capacity: 2, location: 'window', features: ['window', 'quiet'], isAvailable: true },
+      { tableNumber: 'W5', capacity: 4, location: 'window', features: ['window'], isAvailable: true },
+      { tableNumber: 'W6', capacity: 2, location: 'window', features: ['window', 'quiet'], isAvailable: true },
+      { tableNumber: 'W7', capacity: 4, location: 'window', features: ['window'], isAvailable: true },
+      
+      // Main hall tables 
+      { tableNumber: 'M1', capacity: 4, location: 'main hall', features: ['central'], isAvailable: false },
+      { tableNumber: 'M2', capacity: 4, location: 'main hall', features: [], isAvailable: false },
+      { tableNumber: 'M3', capacity: 6, location: 'main hall', features: ['central'], isAvailable: true },
+      
+      // Private rooms
+      { tableNumber: 'P1', capacity: 6, location: 'private room', features: ['private', 'quiet'], isAvailable: true },
+      { tableNumber: 'P2', capacity: 8, location: 'private room', features: ['private', 'VIP'], isAvailable: true },
     ];
     
     for (const tableData of tables) {
@@ -65,7 +87,7 @@ const seedData = async () => {
         time: '19:00',
         partySize: 4,
         tableId: '1',
-        tableNumber: 'A1',
+        tableNumber: 'W1',
         status: 'confirmed',
         notes: 'Window seat preferred'
       },
@@ -77,7 +99,7 @@ const seedData = async () => {
         time: '18:30',
         partySize: 2,
         tableId: '2',
-        tableNumber: 'A2',
+        tableNumber: 'M1',
         status: 'pending',
         notes: 'Anniversary celebration'
       }
@@ -91,8 +113,13 @@ const seedData = async () => {
     console.log('\n👥 Login Credentials:');
     console.log('   Admin: admin@restaurant.com / admin123');
     console.log('   Staff: staff@restaurant.com / staff123');
-    console.log('\n🪑 Tables created: 5 tables');
-    console.log('📅 Reservations created: 2 sample reservations');
+    console.log('   Customer: customer@example.com / customer123');
+    console.log('\n🪑 Tables created:');
+    console.log('   Window tables: 7');
+    console.log('   Main hall tables: 3');
+    console.log('   Private room tables: 2');
+    console.log('   Total: 12 tables');
+    console.log('\n📅 Reservations created: 2 sample reservations');
     
     mongoose.connection.close();
   } catch (error) {

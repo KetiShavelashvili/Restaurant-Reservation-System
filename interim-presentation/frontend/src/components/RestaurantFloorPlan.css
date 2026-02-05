@@ -137,10 +137,11 @@
   border-radius: 8px;
 }
 
-.window-section .table-area {
+.window-tables-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: 15px;
+  padding: 10px 0;
 }
 
 /* Main Hall Section */
@@ -153,8 +154,8 @@
 
 .main-hall-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
   padding: 20px 0;
 }
 
@@ -502,8 +503,9 @@
     gap: 20px;
   }
 
-  .window-section .table-area {
-    grid-template-columns: 1fr;
+  .window-tables-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
   }
 
   .terrace-area {
